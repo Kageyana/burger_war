@@ -5,6 +5,7 @@ import random
 
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Image
+from std_msgs.msg import String
 import tf
 # opencv
 from cv_bridge import CvBridge, CvBridgeError
@@ -25,10 +26,10 @@ class NaviBot():
 
         # camera subscribver
         # for convert image topic to opencv obj
-        self.img = None
-        self.gryimg = None
-        self.bridge = CvBridge()
-        self.image_sub = rospy.Subscriber('image_raw', Image, self.imageCallback)
+        #self.img = None
+        #self.gryimg = None
+        #self.bridge = CvBridge()
+        #self.image_sub = rospy.Subscriber('image_raw', Image, self.imageCallback)
 
     def setGoal(self,x,y,yaw):
         self.client.wait_for_server()
@@ -84,30 +85,50 @@ class NaviBot():
         cv2.waitKey(1)
         #cv2.destroyAllWindows()
 
+    def subcallback(self,data):
+        # 受けとったmessageの中身を足し算して出力
+        print data.data
+
+    def adder(self):
+        #rospy.init_node('adder', anonymous=True)
+
+        # Subscriberとしてimage_dataというトピックに対してSubscribeし、トピックが更新されたときは
+        # callbackという名前のコールバック関数を実行する
+        rospy.Subscriber('war_state', String, self.subcallback)
+
+        # トピック更新の待ちうけを行う関数
+        rospy.spin()
+
     def strategy(self):
         r = rospy.Rate(5) # change speed 5fps
         pi = 3.1415
 
         while True:
-            self.setGoal(-0.7,0.4,0)
-            r.sleep()
-            self.setGoal(-0.5,0,0)
-            r.sleep()
+            self.setGoal(-0.8,0.4,0)
+
+            self.setGoal(-0.4,0,0)
             
             self.setGoal(0,0.5,pi)
-            r.sleep()
             self.setGoal(0,0.5,-pi/2)
-            r.sleep()
             self.setGoal(0,0.5,0)
 
+            self.setGoal(0.8,0.4,pi)
+
             self.setGoal(0.4,0,pi)
+
+            self.setGoal(0.8,-0.4,pi)
             
-            self.setGoal(0.2,-0.5,0)
-            self.setGoal(0,-0.4,pi/2)
-            self.setGoal(-0.2,-0.5,pi)
+            self.setGoal(0,-0.5,0)
+            self.setGoal(0,-0.5,pi/2)
+            self.setGoal(0,-0.5,pi)
+
+            self.setGoal(-0.8,-0.4,0)
+
+            r.sleep()
 
     
 if __name__ == '__main__':
     rospy.init_node('navirun')
     bot = NaviBot()
+    bot.adder()
     bot.strategy()

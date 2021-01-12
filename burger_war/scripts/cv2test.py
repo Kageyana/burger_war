@@ -13,6 +13,7 @@ import actionlib_msgs
 # opencv
 from cv_bridge import CvBridge, CvBridgeError
 import cv2
+import numpy as np
 
 
 
@@ -20,16 +21,14 @@ import cv2
 class NaviBot():
     def __init__(self):
         # velocity publisher
-        self.vel_pub = rospy.Publisher('cmd_vel', Twist,queue_size=1)
-        self.client = actionlib.SimpleActionClient('move_base',MoveBaseAction)
+        #self.vel_pub = rospy.Publisher('cmd_vel', Twist,queue_size=1)
+        #self.client = actionlib.SimpleActionClient('move_base',MoveBaseAction)
 
         # camera subscribver
         # for convert image topic to opencv obj
-        """
         self.img = None
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber('image_raw', Image, self.imageCallback)
-        """
 
     # camera image call back sample
     # comvert image topic to opencv object and show
