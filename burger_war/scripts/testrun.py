@@ -89,7 +89,7 @@ class NaviBot():
         pi = 3.1415
 
         while True:
-            self.setGoal(-0.7,0.5,0)
+            self.setGoal(-0.7,0.4,0)
             r.sleep()
             self.setGoal(-0.5,0,0)
             r.sleep()
