@@ -50,16 +50,14 @@ class NaviBot():
             return self.client.get_result
 
     def subcallback(self,data):
-        judge = json.loads(data.data)
-        for value in judge["targets"]:
-            # フィールド得点を抽出
-            if "BL" not in value["name"]:
-                if  "RE" not in value["name"]:
-                    print value["name"]+"   "+str(value["player"])
+        print data.data
+        # judge = json.loads(data.data)
+        # if judge["targets"] != self.bjudge:
+        #     print judge["targets"]
 
     def adder(self):
         # war_stateを取得
-        rospy.Subscriber('war_state', String, self.subcallback)
+        rospy.Subscriber('point_state', String, self.subcallback)
         # トピック更新の待ちうけを行う
         # rospy.spin()
 
@@ -95,5 +93,4 @@ if __name__ == '__main__':
     rospy.init_node('navirun')
     bot = NaviBot()
     bot.adder()
-    # bot.adder()
     bot.strategy()

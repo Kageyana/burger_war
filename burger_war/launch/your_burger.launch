@@ -12,7 +12,7 @@
     </include>
     <node pkg="burger_war" type="testrun.py" name="testrun" output="screen"/>
     <node pkg="burger_war" type="cv2test.py" name="cv2test" output="screen"/>
-    <!-- <node pkg="burger_war" type="getjudgedata.py" name="getjudgedata" output="screen"/> -->
+    <node pkg="burger_war" type="sendjudge.py" name="sendjudge" output="screen"/>
 
     <!-- END sample program node -->
 
