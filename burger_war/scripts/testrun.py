@@ -24,18 +24,32 @@ class NaviBot():
         # velocity publisher
         self.vel_pub = rospy.Publisher('cmd_vel', Twist,queue_size=1)
         self.client = actionlib.SimpleActionClient('move_base',MoveBaseAction)
+        self.pi = 3.1415
+        self.point = {'Pudding_S':[-0.8,0.4,0],\
+                    'FriedShrimp_S':[-0.4,0,0],\
+                    'Pudding_N':[0,0.5,self.pi],\
+                    'FriedShrimp_W':[0,0.5,-self.pi/2],\
+                    'Tomato_S':[0,0.5,0],\
+                    'Tomato_N':[0.8,0.4,self.pi],\
+                    'FriedShrimp_N':[0.4,0,self.pi],\
+                    'Omelette_N':[0.8,-0.4,self.pi],\
+                    'Omelette_S':[0,-0.5,0],\
+                    'FriedShrimp_E':[0,-0.5,self.pi/2],\
+                    'OctopusWiener_N':[0,-0.5,self.pi],\
+                    'OctopusWiener_S':[-0.8,-0.4,0],\
+                    }
 
-    def setGoal(self,x,y,yaw):
+    def setGoal(self,xyyaw):
         self.client.wait_for_server()
 
         goal = MoveBaseGoal()
         goal.target_pose.header.frame_id = "/map"
         goal.target_pose.header.stamp = rospy.Time.now()
-        goal.target_pose.pose.position.x = x
-        goal.target_pose.pose.position.y = y
+        goal.target_pose.pose.position.x = xyyaw[0]
+        goal.target_pose.pose.position.y = xyyaw[1]
 
         # Euler to Quartanion
-        q=tf.transformations.quaternion_from_euler(0,0,yaw)        
+        q=tf.transformations.quaternion_from_euler(0,0,xyyaw[2])        
         goal.target_pose.pose.orientation.x = q[0]
         goal.target_pose.pose.orientation.y = q[1]
         goal.target_pose.pose.orientation.z = q[2]
@@ -63,28 +77,27 @@ class NaviBot():
 
     def strategy(self):
         r = rospy.Rate(5) # change speed 5fps
-        pi = 3.1415
 
         while True:
-            self.setGoal(-0.8,0.4,0)
+            self.setGoal(self.point['Pudding_S'])
 
-            self.setGoal(-0.4,0,0)
+            self.setGoal(self.point['FriedShrimp_S'])
             
-            self.setGoal(0,0.5,pi)
-            self.setGoal(0,0.5,-pi/2)
-            self.setGoal(0,0.5,0)
+            self.setGoal(self.point['Pudding_N'])
+            self.setGoal(self.point['FriedShrimp_W'])
+            self.setGoal(self.point['Tomato_S'])
 
-            self.setGoal(0.8,0.4,pi)
+            self.setGoal(self.point['Tomato_N'])
 
-            self.setGoal(0.4,0,pi)
+            self.setGoal(self.point['FriedShrimp_N'])
 
-            self.setGoal(0.8,-0.4,pi)
+            self.setGoal(self.point['Omelette_N'])
             
-            self.setGoal(0,-0.5,0)
-            self.setGoal(0,-0.5,pi/2)
-            self.setGoal(0,-0.5,pi)
+            self.setGoal(self.point['Omelette_S'])
+            self.setGoal(self.point['FriedShrimp_E'])
+            self.setGoal(self.point['OctopusWiener_N'])
 
-            self.setGoal(-0.8,-0.4,0)
+            self.setGoal(self.point['OctopusWiener_S'])
 
             r.sleep()
 
