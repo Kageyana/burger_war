@@ -56,7 +56,7 @@ class NaviBot():
                 # draw the center of the circl
                 cv2.circle( self.colimg, ( i[0] , i[1] ), 2, (0, 0, 255 ), 3)
                 """
-        cv2.imshow("Image window", self.colimg)
+        cv2.imshow("Image window", self.img)
         cv2.waitKey(1)
         #cv2.destroyAllWindows()
 

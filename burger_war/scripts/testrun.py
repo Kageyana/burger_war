@@ -25,22 +25,47 @@ class NaviBot():
         self.vel_pub = rospy.Publisher('cmd_vel', Twist,queue_size=1)
         self.client = actionlib.SimpleActionClient('move_base',MoveBaseAction)
         self.pi = 3.1415
-        self.point = {'Pudding_S':[-0.8,0.4,0],\
-                    'FriedShrimp_S':[-0.4,0,0],\
-                    'Pudding_N':[0,0.5,self.pi],\
-                    'FriedShrimp_W':[0,0.5,-self.pi/2],\
-                    'Tomato_S':[0,0.5,0],\
-                    'Tomato_N':[0.8,0.4,self.pi],\
-                    'FriedShrimp_N':[0.4,0,self.pi],\
-                    'Omelette_N':[0.8,-0.4,self.pi],\
-                    'Omelette_S':[0,-0.5,0],\
-                    'FriedShrimp_E':[0,-0.5,self.pi/2],\
-                    'OctopusWiener_N':[0,-0.5,self.pi],\
-                    'OctopusWiener_S':[-0.8,-0.4,0],\
-                    }
+        # フィールド得点の座標
+        self.point = { 'Tomato_N':     [0.8,0.55,self.pi, 6],\
+                        'Tomato_S':     [0.1,0.55,0, 7],\
+                        'Omelette_N':   [0.8,-0.55,self.pi, 8],\
+                        'Omelette_S':   [0.1,-0.55,0, 9],\
+                        'Pudding_N':    [-0.1,0.55,self.pi,10],\
+                        'Pudding_S':  [-0.8,0.55,0, 11],\
+                        'OctopusWiener_N':[-0.1,-0.55,self.pi,12],\
+                        'OctopusWiener_S':[-0.8,-0.55,0, 13],\
+                        'FriedShrimp_N':[0.4,0,self.pi, 14],\
+                        'FriedShrimp_E':[0,-0.4,self.pi/2, 15],\
+                        'FriedShrimp_W':[0,0.4,-self.pi/2, 16],\
+                        'FriedShrimp_S':[-0.4,0,0, 17],\
+                        'wait':[-1,0,0, 0]\
+                        }
+        #　獲得する順番
+        self.orderPoint = ['Pudding_S',\
+                            'FriedShrimp_S',\
+                            'Pudding_N',\
+                            'FriedShrimp_W',\
+                            'Tomato_S',\
+                            'Tomato_N',\
+                            'FriedShrimp_N',\
+                            'Omelette_N',\
+                            'Omelette_S',\
+                            'FriedShrimp_E',\
+                            'OctopusWiener_N',\
+                            'OctopusWiener_S'\
+                        ]
+        # 現在のorderPointのインデックス
+        self.order = 0
+        # 現在の目標得点
+        self.nowGoal = []
 
     def setGoal(self,xyyaw):
         self.client.wait_for_server()
+
+        # 座標名keyから取得
+        self.nowGoal = [k for k, v in self.point.items() if v == xyyaw][0]
+        self.nowGoal = self.point[self.nowGoal]
+        print self.nowGoal
 
         goal = MoveBaseGoal()
         goal.target_pose.header.frame_id = "/map"
@@ -63,47 +88,59 @@ class NaviBot():
         else:
             return self.client.get_result
 
-    def subcallback(self,data):
-        print data.data
-        # judge = json.loads(data.data)
-        # if judge["targets"] != self.bjudge:
-        #     print judge["targets"]
+    def subcallback_point(self,data):
+        # 空リストではない時
+        if self.nowGoal:
+            # 辞書型に変換
+            targets = json.loads(data.data)["targets"]
+            # print target[0]
+            # 現在の目標得点を獲得できたか確認
+            if targets[self.nowGoal[3]]['player'] == "r":
+                for i in range(12):
+                    # 目標得点を更新
+                    self.order = self.order + 1
+                    if self.order >= 12:
+                        self.order = 0
+                    self.nowGoal = self.point[self.orderPoint[self.order]]
+                    print self.orderPoint[self.order] , targets[self.nowGoal[3]]['player']
+                    # print targets[int(self.nowGoal[3])], targets[int(self.nowGoal[3])]['player']
+                    # 未獲得の得点かどうか確認
+                    if targets[self.nowGoal[3]]['player'] != "r":
+                        #　未獲得ならループ終了
+                        break
+                    elif targets[self.nowGoal[3]]['player'] == "r" and i == 11:
+                        # すべて獲得していれば待機位置に戻る
+                        self.nowGoal = self.point['wait']
+                print self.orderPoint[self.order]
+                self.setGoal(self.nowGoal)
+    def subcallback_war(self,data):
+        if self.nowGoal == self.point['wait']:
+            self.order = 0
+            targets = json.loads(data.data)["targets"]
+            for i in range(12):
+                if targets[i+6]['player'] != "b":
+                    # 敵の得点があれば獲得しに行く
+                    self.nowGoal = self.point[targets[i+6]['name']]
+                    self.setGoal(self.nowGoal)
+                    break
+            
 
-    def adder(self):
+    def lidner(self):
         # war_stateを取得
-        rospy.Subscriber('point_state', String, self.subcallback)
+        rospy.Subscriber('point_state', String, self.subcallback_point)
+        rospy.Subscriber('war_state', String, self.subcallback_war)
         # トピック更新の待ちうけを行う
         # rospy.spin()
 
     def strategy(self):
         r = rospy.Rate(5) # change speed 5fps
-
+        self.setGoal(self.point['Pudding_S'])
         while True:
-            self.setGoal(self.point['Pudding_S'])
-
-            self.setGoal(self.point['FriedShrimp_S'])
-            
-            self.setGoal(self.point['Pudding_N'])
-            self.setGoal(self.point['FriedShrimp_W'])
-            self.setGoal(self.point['Tomato_S'])
-
-            self.setGoal(self.point['Tomato_N'])
-
-            self.setGoal(self.point['FriedShrimp_N'])
-
-            self.setGoal(self.point['Omelette_N'])
-            
-            self.setGoal(self.point['Omelette_S'])
-            self.setGoal(self.point['FriedShrimp_E'])
-            self.setGoal(self.point['OctopusWiener_N'])
-
-            self.setGoal(self.point['OctopusWiener_S'])
-
             r.sleep()
 
     
 if __name__ == '__main__':
     rospy.init_node('navirun')
     bot = NaviBot()
-    bot.adder()
+    bot.lidner()
     bot.strategy()
