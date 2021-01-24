@@ -58,6 +58,8 @@ class NaviBot():
         self.order = 0
         # 現在の目標得点
         self.nowGoal = []
+        # 目標位置に到達したか
+        self.stop = False
 
     def setGoal(self,xyyaw):
         self.client.wait_for_server()
@@ -114,15 +116,34 @@ class NaviBot():
                 print self.orderPoint[self.order]
                 self.setGoal(self.nowGoal)
     def subcallback_war(self,data):
-        if self.nowGoal == self.point['wait']:
-            self.order = 0
-            targets = json.loads(data.data)["targets"]
+        targets = json.loads(data.data)["targets"]
+        if self.stop:
             for i in range(12):
-                if targets[i+6]['player'] != "b":
-                    # 敵の得点があれば獲得しに行く
-                    self.nowGoal = self.point[targets[i+6]['name']]
-                    self.setGoal(self.nowGoal)
+                # 目標得点を更新
+                self.order = self.order + 1
+                if self.order >= 12:
+                    self.order = 0
+                self.nowGoal = self.point[self.orderPoint[self.order]]
+                print self.orderPoint[self.order] , targets[self.nowGoal[3]]['player']
+                # 未獲得の得点かどうか確認
+                if targets[self.nowGoal[3]]['player'] != "r":
+                    #　未獲得ならループ終了
                     break
+                elif targets[self.nowGoal[3]]['player'] == "r" and i == 11:
+                    # すべて獲得していれば待機位置に戻る
+                    self.nowGoal = self.point['wait']
+            print self.orderPoint[self.order]
+            self.setGoal(self.nowGoal)
+            self.stop = False
+        else:
+            if self.nowGoal == self.point['wait']:
+                self.order = 0
+                for i in range(12):
+                    if targets[i+6]['player'] != "b":
+                        # 敵の得点があれば獲得しに行く
+                        self.nowGoal = self.point[targets[i+6]['name']]
+                        self.setGoal(self.nowGoal)
+                        break
             
 
     def lidner(self):
@@ -136,6 +157,9 @@ class NaviBot():
         r = rospy.Rate(5) # change speed 5fps
         self.setGoal(self.point['Pudding_S'])
         while True:
+            if  self.client.get_result and not self.stop:
+                self.stop = True
+                print 'test'
             r.sleep()
 
     
