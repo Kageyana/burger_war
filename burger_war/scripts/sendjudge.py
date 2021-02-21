@@ -9,7 +9,8 @@ import requests
 
 class judgedata():
     def __init__(self):
-        self.path = "http://127.0.0.1:5000/warState"
+        # self.path = "http://127.0.0.1:5000/warState"
+        self.path = "http://192.168.0.1/warState"
         result = requests.get(self.path)
         self.bjudge = json.loads(result.text.encode())["targets"]
     def getdata(self):

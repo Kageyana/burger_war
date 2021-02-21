@@ -28,6 +28,8 @@ class NaviBot():
         self.client = actionlib.SimpleActionClient('move_base',MoveBaseAction)
         self.twist = Twist()
         self.pi = 3.1415
+        self.mycolor = "r"
+        self.enemycolor = "b"
         # フィールド得点の座標
         # [x,y,qu,targetindex]
         self.point = { 'Tomato_N':     [0.85,0.5,self.pi, 6],\
@@ -93,8 +95,6 @@ class NaviBot():
             rospy.logerr("Action server not available!")
             rospy.signal_shutdown("Action server not available!")
         else:
-            print wait
-            print type(wait)
             return self.client.get_result
 
     def subcallback_point(self,data):
@@ -104,7 +104,7 @@ class NaviBot():
             targets = json.loads(data.data)["targets"]
             # print target[0]
             # 現在の目標得点を獲得できたか確認
-            if targets[self.nowGoal[3]]['player'] == "r":
+            if targets[self.nowGoal[3]]['player'] == self.mycolor:
                 for i in range(12):
                     # 目標得点を更新
                     self.order = self.order + 1
@@ -114,10 +114,10 @@ class NaviBot():
                     print self.orderPoint[self.order] , targets[self.nowGoal[3]]['player']
                     # print targets[int(self.nowGoal[3])], targets[int(self.nowGoal[3])]['player']
                     # 未獲得の得点かどうか確認
-                    if targets[self.nowGoal[3]]['player'] != "r":
+                    if targets[self.nowGoal[3]]['player'] != self.mycolor:
                         #　未獲得ならループ終了
                         break
-                    elif targets[self.nowGoal[3]]['player'] == "r" and i == 11:
+                    elif targets[self.nowGoal[3]]['player'] == self.mycolor and i == 11:
                         # すべて獲得していれば待機位置に戻る
                         self.nowGoal = self.point['wait']
                 print self.orderPoint[self.order]
@@ -133,10 +133,10 @@ class NaviBot():
                 self.nowGoal = self.point[self.orderPoint[self.order]]
                 print self.orderPoint[self.order] , targets[self.nowGoal[3]]['player']
                 # 未獲得の得点かどうか確認
-                if targets[self.nowGoal[3]]['player'] != "r":
+                if targets[self.nowGoal[3]]['player'] != self.mycolor:
                     #　未獲得ならループ終了
                     break
-                elif targets[self.nowGoal[3]]['player'] == "r" and i == 11:
+                elif targets[self.nowGoal[3]]['player'] == self.mycolor and i == 11:
                     # すべて獲得していれば待機位置に戻る
                     self.nowGoal = self.point['wait']
             print self.orderPoint[self.order]
@@ -146,7 +146,7 @@ class NaviBot():
             if self.nowGoal == self.point['wait']:
                 self.order = 0
                 for i in range(12):
-                    if targets[i+6]['player'] != "b":
+                    if targets[i+6]['player'] != self.enemycolor:
                         # 敵の得点があれば獲得しに行く
                         self.nowGoal = self.point[targets[i+6]['name']]
                         self.setGoal(self.nowGoal)

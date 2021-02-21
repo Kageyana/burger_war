@@ -44,19 +44,17 @@ class NaviBot():
         self.bgrUpper = np.array([6, 6, 255])    # 抽出する色の上限
         self.img_mask = cv2.inRange(self.colimg, self.bgrLower, self.bgrUpper)
         self.colimg = cv2.bitwise_and(self.colimg, self.colimg, mask=self.img_mask)
-        """
-        self.gryimg = cv2.cvtColor( self.img, cv2.COLOR_BGR2GRAY )
-        self.colimg = self.gryimg
+        self.gryimg = cv2.cvtColor( self.colimg, cv2.COLOR_BGR2GRAY )
+        # self.colimg = self.gryimg
         circles = cv2 . HoughCircles( self.gryimg, cv2.HOUGH_GRADIENT, 1, 20, param1=500, param2=30, minRadius=0, maxRadius=0 )
         if circles != None:
             circles = np.uint16 (np.around(circles))
             for i in circles [0,:] :
             # draw the outer circle
-                cv2.circle( self.colimg, ( i[0] , i[1] ), i[2] , (0, 255, 0 ), 2)
+                cv2.circle( self.gryimg, ( i[0] , i[1] ), i[2] , (0, 255, 0 ), 2)
                 # draw the center of the circl
-                cv2.circle( self.colimg, ( i[0] , i[1] ), 2, (0, 0, 255 ), 3)
-                """
-        cv2.imshow("Image window", self.img)
+                cv2.circle( self.gryimg, ( i[0] , i[1] ), 2, (0, 0, 255 ), 3)
+        cv2.imshow("Image window", self.gryimg)
         cv2.waitKey(1)
         #cv2.destroyAllWindows()
 
