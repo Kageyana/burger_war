@@ -10,7 +10,7 @@
     <!-- <node pkg="burger_war" type="randomRun.py" name="randomRun" output="screen"/> -->
     <include file="$(find burger_navigation)/launch/burger_navigation.launch">
     </include>
-    <node pkg="burger_war" type="testrun.py" name="testrun" output="screen"/>
+    <node pkg="burger_war" type="looprun.py" name="looprun" output="screen"/>
     <node pkg="burger_war" type="cv2test.py" name="cv2test" output="screen"/>
     <node pkg="burger_war" type="sendjudge.py" name="sendjudge" output="screen"/>
 

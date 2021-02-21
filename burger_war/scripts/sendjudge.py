@@ -9,14 +9,15 @@ import requests
 
 class judgedata():
     def __init__(self):
-        result = requests.get("http://127.0.0.1:5000/warState")
+        self.path = "http://127.0.0.1:5000/warState"
+        result = requests.get(self.path)
         self.bjudge = json.loads(result.text.encode())["targets"]
     def getdata(self):
         recdata = ""
-        result = requests.get("http://127.0.0.1:5000/warState")
+        result = requests.get(self.path)
         if result.status_code == 200:
             text = result.text.encode()
-            value = json.loads(text)
+            value = json.loads(text)    # 辞書型に変換
             # print text
             # print value
             # 得点保持者が変更になった時
@@ -29,7 +30,7 @@ class judgedata():
 
 if __name__ == '__main__':
     rospy.init_node('sendjudge')
-    r = rospy.Rate(10) # 10hz
+    r = rospy.Rate(10) # 10hz 0.1s
     pub = rospy.Publisher('point_state', String)
     judge = judgedata()
     while not rospy.is_shutdown():
